@@ -19,6 +19,10 @@
   },
   "homepage": "https://github.com/JosiahBull/diary-reminder-applet#readme",
   "devDependencies": {
-    "electron": "^11.2.1"
+    "electron": "^11.2.1",
+    "electron-reload": "^1.5.0"
+  },
+  "dependencies": {
+    "@ckeditor/ckeditor5-build-balloon-block": "^25.0.0"
   }
 }

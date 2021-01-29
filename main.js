@@ -37,7 +37,7 @@ function create_quick_entry_window() {
         minWidth: 300,
         minHeight: 200,
         webPreferences: {
-            contextIsolation: false
+            contextIsolation: true
         },
         transparent: true, 
         frame: false
@@ -57,11 +57,11 @@ function create_options_window() {
     window.loadFile('./windows/options/index.html');
 }
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
+// app.on('window-all-closed', () => {
+//   if (process.platform !== 'darwin') {
+//     app.quit()
+//   }
+// })
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {

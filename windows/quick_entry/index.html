@@ -8,7 +8,7 @@
 <body>
     <div class="main_window">        
         <div class="titlebar"></div>
-        <img src="assets/close.svg", class="close-button">
+        <img src="assets/close.svg", class="close-button" onclick="close_entry()">
         <div class="form-style-5">
             <form>
                 <fieldset>
@@ -59,14 +59,12 @@
         resize_text_box();
     </script>
     <script> //Handle button clicks, etc.
-        const remote = require('electron').remote;
-
         function submit_entry() {
             
         }
 
         function close_entry() {
-            let window_close = remote.getCurrentWindow().close();
+            window.close();
         }
     </script>
     <style>
