@@ -10,19 +10,29 @@ let tray;
 const store = new Store({
     config_name: 'user-preferences',
     defaults: {
-        window_bounds: {
-            width: 800,
-            height: 600
-        },
         tracking: true,
         reminders: true,
+        windows: {
+            diary_entry: {
+                height: 600,
+                width: 800
+            },
+            quick_entry: {
+                height: 400,
+                width: 325
+            },
+            options: {
+                height: 600,
+                width: 800
+            }
+        }
     }
 });
 
 function create_diary_entry_window(){
     const window = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: store.get('windows.diary_entry.width'),
+        height: store.get('windows.diary_entry.height'),
         webPreferences: {
             contextIsolation: true
         }
@@ -31,9 +41,10 @@ function create_diary_entry_window(){
 }
 
 function create_quick_entry_window() {
-    const window = new BrowserWindow({
-        width: 325,
-        height: 400,
+    console.log(store.get('windows.quick_entry.width'));
+    let window = new BrowserWindow({
+        width: store.get('windows.quick_entry.width'),
+        height: store.get('windows.quick_entry.height'),
         minWidth: 300,
         minHeight: 200,
         webPreferences: {
@@ -57,11 +68,11 @@ function create_options_window() {
     window.loadFile('./windows/options/index.html');
 }
 
-// app.on('window-all-closed', () => {
-//   if (process.platform !== 'darwin') {
-//     app.quit()
-//   }
-// })
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
@@ -72,7 +83,7 @@ app.on('activate', () => {
 //Note that updating the tray like this is very hacky, and the engine in electron is not designed to do this. If this is changed in the future this should be rewritten to support live updates in a better way.
 function update_tray() { 
     if (tray) tray.destroy();
-    tray = new Tray('./favicon.ico')
+    tray = new Tray('./icon-linux.png')
     tray.setToolTip('Diary Prompter')
     tray.on('click', () => create_quick_entry_window());
     tray.setContextMenu(Menu.buildFromTemplate([
@@ -95,6 +106,17 @@ function update_tray() {
             label: 'Add Quick Entry',
             click: () => create_quick_entry_window()
         }),
+        new MenuItem({
+            label: 'Add Full Entry',
+            click: () => create_diary_entry_window()
+        }),
+        new MenuItem({
+            label: 'Quit',
+            click: () => {
+                app.isQutting = true;
+                app.quit();
+            }
+        })
     ]));
 }
 
