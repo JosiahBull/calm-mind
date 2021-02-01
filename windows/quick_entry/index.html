@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Diary Quick Add</title>
     <script src="../../node_modules/@ckeditor/ckeditor5-build-balloon-block/build/ckeditor.js"></script>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
 </head>
 <body>
     <div class="main_window">        
@@ -19,7 +20,7 @@
                         <div id="editor"></div> 
                     </div>
                 </fieldset>
-                <input id="submission_button" type="submit" value="Save Entry" onclick="submit_entry()"/>
+                <input id="submission_button" type="button" value="Save Entry" onclick="submit_entry()"/>
             </form>
         </div>
     </div>
@@ -59,11 +60,19 @@
         resize_text_box();
     </script>
     <script> //Handle button clicks, etc.
+        const { ipcRenderer } = require('electron');
         function submit_entry() {
-            console.log(window.editor);
+            let package = {
+                location: document.getElementsByName('location')[0].value,
+                topic: document.getElementsByName('title')[0].value,
+                main_box: window.editor.getData(),
+            };
+            if (package.location.length > 0 || package.topic.length > 0 || package.main_box.length > 0) ipcRenderer.send('save_quick_entry', package);
+            window.close();
         }
 
         function close_entry() {
+            //TODO Implement a confirmation dialog box if the user has made changes in excess of 10 chars total.
             window.close();
         }
     </script>

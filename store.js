@@ -21,7 +21,7 @@ class Store {
         key.split('.').forEach(key => item = item[key]);
         return item;
     }
-    set(key, val) {
+    async set(key, val) {
         let item = this.data;
         let key_list = key.split('.');
         for (let i = 0; i < key_list.length -1; i++) {
