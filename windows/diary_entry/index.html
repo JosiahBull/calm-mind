@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Diary Entry</title>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
-    <script src="../../node_modules/@ckeditor/ckeditor5-build-balloon-block/build/ckeditor.js"></script>
+    <!-- <script src="../../node_modules/@ckeditor/ckeditor5-build-balloon-block/build/ckeditor.js"></script> -->
 </head>
 <body></body>
     <div class="main_window">        
@@ -211,7 +211,7 @@
                     //Add listeners
                     document.querySelector(`#yes_button_${this.id}`).addEventListener('click', () => this.set(true));
                     document.querySelector(`#no_button_${this.id}`).addEventListener('click', () => this.set(false));
-                    document.querySelector(`#refresh_button_${this.id}`).addEventListener('click', () => this.change_placeholder(ipcRenderer.sendSync('self_care_questions', 1)[0]));
+                    document.querySelector(`#refresh_button_${this.id}`).addEventListener('click', () => this.change_placeholder(ipcRenderer.sendSync('questions', {type: 'self_care', number: 1})[0]));
                         
                 } catch (err) {
                     //TODO: remove failed init attempt just in case.
@@ -269,10 +269,23 @@
     </script>
     <script> //Handle the creation of rich text editors.
         const num_provoking_questions = 2;
+        import BalloonEditor from '@ckeditor/ckeditor5-build-balloon-block/build/';
+        import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials';
+        import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
+        import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
+
+        import Markdown from '@ckeditor/ckeditor5-markdown-gfm/src/markdown';
+
         window.editors = {provoking: []};
         BalloonEditor
             .create( document.querySelector('#editor_summary'), {
-                placeholder: "One sentence summary of today."
+                placeholder: "One sentence summary of today.",
+                plugins: [
+                    Markdown,
+                    Essentials,
+                    Bold,
+                    Italic,
+                ]
             }).then( editor => {
 		        window.editors.summary = editor;
 	        }).catch(err => {
@@ -280,7 +293,13 @@
             });
         BalloonEditor
             .create( document.querySelector('#editor_details'), {
-                placeholder: "Is there anything else I need to comment on?"
+                placeholder: "Is there anything else I need to comment on?",
+                plugins: [
+                    Markdown,
+                    Essentials,
+                    Bold,
+                    Italic,
+                ]
             }).then( editor => {
 		        window.editors.extras = editor;
 	        }).catch(err => {
@@ -299,6 +318,12 @@
             BalloonEditor
                 .create(sub_node, {
                     placeholder: question,
+                    plugins: [
+                        Markdown,
+                        Essentials,
+                        Bold,
+                        Italic,
+                    ]
                 }).then(editor => {
                     window.editors.provoking.push({editor: editor, node: sub_node, placeholder: question});
                 }).catch(err => {

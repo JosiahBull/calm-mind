@@ -1,6 +1,8 @@
 const { app, BrowserWindow, Menu, Tray, MenuItem, ipcMain } = require('electron');
 const Store = require('./store.js');
-const fs = require('fs');
+const path = require('path');
+
+
 // Enable live reload for Electron too
 require('electron-reload')(__dirname, {
     // Note that the path to electron may vary according to the main file
@@ -115,6 +117,10 @@ const store = new Store({
                 width: 800
             }
         },
+        save_location: path.join(app.getPath('documents'), '/Calm Mind'),
+        entries: [
+
+        ]
     }
 });
 
@@ -128,7 +134,7 @@ function create_diary_entry_window(){
             nodeIntegration: true
         }
     });
-    // window.setMenu(null);
+    window.setMenu(null);
     window.loadFile('./windows/diary_entry/index.html');
     window.on('close', () => {
         let size = window.getSize();

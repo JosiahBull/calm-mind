@@ -15,6 +15,7 @@ class Store {
         const user_data_path = (electron.app || electron.remote.app).getPath('userData');
         this.path = path.join(user_data_path, opts.config_name + '.json');
         this.data = parse_data_file(this.path, opts.defaults);
+        this.defaults = opts.defaults;
     }
     get(key) {
         let item = this.data;
@@ -38,6 +39,9 @@ class Store {
         }
         delete item[key_list.pop()];
         fs.writeFileSync(this.path, JSON.stringify(this.data));
+    }
+    reset() { //Reset to defaults
+        
     }
 }
 
