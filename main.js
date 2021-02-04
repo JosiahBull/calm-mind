@@ -1,8 +1,9 @@
 const { app, BrowserWindow, Menu, Tray, MenuItem, ipcMain } = require('electron');
 const Store = require('./store.js');
+const Entry = require('./entry.js');
 const path = require('path');
 
-
+let entry = new Entry();
 // Enable live reload for Electron too
 require('electron-reload')(__dirname, {
     // Note that the path to electron may vary according to the main file
@@ -118,9 +119,7 @@ const store = new Store({
             }
         },
         save_location: path.join(app.getPath('documents'), '/Calm Mind'),
-        entries: [
-
-        ]
+        entries: {}
     }
 });
 
@@ -134,7 +133,7 @@ function create_diary_entry_window(){
             nodeIntegration: true
         }
     });
-    window.setMenu(null);
+    // window.setMenu(null);
     window.loadFile('./windows/diary_entry/index.html');
     window.on('close', () => {
         let size = window.getSize();
@@ -206,12 +205,34 @@ ipcMain.on('create-confirmation', (event, args) => {
 
 //Save quick entry
 ipcMain.on('save_quick_entry', (event, args) => {
-    console.log(args);
+    let current_entries = store.get('entries');
+    let day_data = new Date().setHours(0, 0, 0, 0);
+    let entry;
+    if (day_data in current_entries) {
+        let data = current_entries[day_data];
+        entry = new Entry(data);
+    } else {
+        entry = new Entry();
+    }
+    entry.add_quick_entry(args);
+    store.set(`entries.${day_data}`, entry);
 });
 
 //Save full entry
 ipcMain.on('save_entry', (event, args) => {
-    console.log(args);
+    let current_entries = store.get('entries');
+    let day_data = new Date().setHours(0, 0, 0, 0);
+    let entry;
+    if (day_data in current_entries) {
+        let data = current_entries[day_data];
+        entry = new Entry(data);
+    } else {
+        entry = new Entry();
+    }
+    entry.add_diary_entry(args);
+    entry.generate_markdown();
+    console.log(entry);
+    store.set(`entries.${day_data}`, entry);
 }); 
 
 //Get self care questions

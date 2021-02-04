@@ -24,6 +24,6 @@
   },
   "dependencies": {
     "@ckeditor/ckeditor5-build-balloon-block": "^25.0.0",
-    "@ckeditor/ckeditor5-markdown-gfm": "^25.0.0"
+    "html-to-markdown": "^1.0.0"
   }
 }
