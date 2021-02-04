@@ -94,7 +94,9 @@ ${converter.convert(this.full_entry.details[1][1])}
 
 ${(() => {
     if (this.full_entry.extras.length > 0) {
-return `## You had some extra comments today that we didn't cover already:
+return `
+
+## You had some extra comments today that we didn't cover already:
 
 ${converter.convert(this.full_entry.extras)}`
     }

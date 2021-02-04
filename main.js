@@ -44,6 +44,7 @@ const provoking_questions = [
     "What is one example of me standing up for my principals today?",
     "If I could remake one decision today, what would it be and why?"
 ];
+const icon_path = './icons/windows/x512.ico';
 let options_window;
 
 //App Config
@@ -66,7 +67,6 @@ function shuffle_array(array) { //Copied from https://stackoverflow.com/a/126468
 function export_diary_entries() {
     let entries = store.get('entries');
     const file_path = store.get('save_location');
-    console.log(`Writing to: ${file_path}`);
     entries = Object.values(entries).map(entry => {
         entry = new Entry(entry);
         let d = new Date(entry.start_day);
@@ -76,13 +76,15 @@ function export_diary_entries() {
         let markdown = entry.generate_markdown();
         fs.writeFileSync(path.join(file_path, `${da}-${mo}-${ye} Diary Entry.md`), markdown);
     });
-    // store.set('entries', entries);
+    // store.set('entries', entries); <- //TODO: store which entries have already been exported, and mark them as exported.
+    //TODO: Add auto-renaming on force export.
+    //TODO: Add auto-exporting at the end of a day.
 }
 
 //Note that updating the tray like this is very hacky, and the engine in electron is not designed to do this. If this is changed in the future this should be rewritten to support live updates in a better way.
 function update_tray() { 
     if (tray) tray.destroy();
-    tray = new Tray('./icon-linux.png')
+    tray = new Tray('./icons/windows/x512.ico')
     tray.setToolTip('Diary Prompter')
     tray.on('click', () => create_quick_entry_window());
     tray.setContextMenu(Menu.buildFromTemplate([
@@ -162,9 +164,10 @@ function create_diary_entry_window(){
             contextIsolation: false,
             enableRemoteModule: true,
             nodeIntegration: true,
-        }
+        },
+        icon: icon_path
     });
-    // window.setMenu(null);
+    window.setMenu(null);
     window.loadFile('./windows/diary_entry/index.html');
     window.on('close', () => {
         let size = window.getSize();
@@ -185,7 +188,8 @@ function create_quick_entry_window() {
             nodeIntegration: true,
         },
         transparent: true, 
-        frame: false
+        frame: false,
+        icon: icon_path
     });
     window.setMenu(null);
     window.loadFile('./windows/quick_entry/index.html');
@@ -204,7 +208,8 @@ function create_options_window() {
             contextIsolation: false,
             nodeIntegration: true,
             enableRemoteModule: true,
-        }
+        },
+        icon: icon_path
     })
     options_window.loadFile('./windows/options/index.html');
     options_window.on('close', (event) => {
@@ -306,5 +311,3 @@ ipcMain.on('questions', (event, opts) => {
 
     store_list(); //Replace list with removed items.
 });
-
-export_diary_entries();
