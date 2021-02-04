@@ -2,13 +2,15 @@ const { app, BrowserWindow, Menu, Tray, MenuItem, ipcMain } = require('electron'
 const Store = require('./store.js');
 const Entry = require('./entry.js');
 const path = require('path');
-
-let entry = new Entry();
-// Enable live reload for Electron too
-require('electron-reload')(__dirname, {
-    // Note that the path to electron may vary according to the main file
-    electron: require(`${__dirname}/node_modules/electron`)
-});
+const fs = require('fs');
+const isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false;
+if (isDev) {
+    // Enable live reload for Electron too
+    require('electron-reload')(__dirname, {
+        // Note that the path to electron may vary according to the main file
+        electron: require(`${__dirname}/node_modules/electron`)
+    });
+}
 
 //Global Vars
 const self_care_questions = [
@@ -44,6 +46,13 @@ const provoking_questions = [
 ];
 let options_window;
 
+//App Config
+app.setLoginItemSettings({
+    openAtLogin: true,
+    openAsHidden: true,
+});
+
+
 //Helper Functions
 function shuffle_array(array) { //Copied from https://stackoverflow.com/a/12646864
     for (let i = array.length - 1; i > 0; i--) {
@@ -51,6 +60,23 @@ function shuffle_array(array) { //Copied from https://stackoverflow.com/a/126468
         [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
+}
+
+//A function to export all diary entries
+function export_diary_entries() {
+    let entries = store.get('entries');
+    const file_path = store.get('save_location');
+    console.log(`Writing to: ${file_path}`);
+    entries = Object.values(entries).map(entry => {
+        entry = new Entry(entry);
+        let d = new Date(entry.start_day);
+        const ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d);
+        const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d);
+        const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d);
+        let markdown = entry.generate_markdown();
+        fs.writeFileSync(path.join(file_path, `${da}-${mo}-${ye} Diary Entry.md`), markdown);
+    });
+    // store.set('entries', entries);
 }
 
 //Note that updating the tray like this is very hacky, and the engine in electron is not designed to do this. If this is changed in the future this should be rewritten to support live updates in a better way.
@@ -89,6 +115,7 @@ function update_tray() {
             label: 'Quit',
             click: () => {
                 app.isQutting = true;
+                options_window.close()
                 app.quit();
             }
         })
@@ -121,7 +148,8 @@ const store = new Store({
             }
         },
         save_location: path.join(app.getPath('documents'), '/Calm Mind'),
-        entries: {}
+        entries: {},
+        run_on_startup: true,
     }
 });
 
@@ -132,7 +160,8 @@ function create_diary_entry_window(){
         height: store.get('windows.diary_entry.height'),
         webPreferences: {
             contextIsolation: false,
-            nodeIntegration: true
+            enableRemoteModule: true,
+            nodeIntegration: true,
         }
     });
     // window.setMenu(null);
@@ -152,6 +181,7 @@ function create_quick_entry_window() {
         minHeight: 200,
         webPreferences: {
             contextIsolation: false,
+            enableRemoteModule: true,
             nodeIntegration: true,
         },
         transparent: true, 
@@ -171,13 +201,17 @@ function create_options_window() {
         width: 800,
         height: 600,
         webPreferences: {
-            contextIsolation: true
+            contextIsolation: false,
+            nodeIntegration: true,
+            enableRemoteModule: true,
         }
     })
     options_window.loadFile('./windows/options/index.html');
     options_window.on('close', (event) => {
-        event.preventDefault();
-        options_window.hide();
+        if (!app.isQutting) {
+            event.preventDefault();
+            options_window.hide();
+        }
     })
 }
 
@@ -193,16 +227,13 @@ app.whenReady().then(() => {
     create_options_window();
     options_window.hide();
 }).catch(err => {
-    console.error(`Failed to create options window ${err}`);
-    //TODO: Add check for if production and throw fatal error.
-})
+    let error = `Failed to create options window ${err}`;
+    if (isDev) console.error(error);
+    else throw new Error(error);
+});
 
 //IPC Communication between processes
 //Close window button backend
-ipcMain.on('close-window', (event, args) => {
-
-});
-
 //Create confirmation dialog box for window.
 ipcMain.on('create-confirmation', (event, args) => {
 
@@ -275,3 +306,5 @@ ipcMain.on('questions', (event, opts) => {
 
     store_list(); //Replace list with removed items.
 });
+
+export_diary_entries();

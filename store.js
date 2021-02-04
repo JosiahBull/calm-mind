@@ -1,6 +1,7 @@
 const electron = require('electron');
 const path = require('path');
 const fs = require('fs');
+const isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false;
 
 function parse_data_file(file_path, defaults) {
     try {
