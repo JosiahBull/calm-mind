@@ -42,7 +42,7 @@ const provoking_questions = [
     "What is one example of me standing up for my principals today?",
     "If I could remake one decision today, what would it be and why?"
 ];
-
+let options_window;
 
 //Helper Functions
 function shuffle_array(array) { //Copied from https://stackoverflow.com/a/12646864
@@ -60,7 +60,9 @@ function update_tray() {
     tray.setToolTip('Diary Prompter')
     tray.on('click', () => create_quick_entry_window());
     tray.setContextMenu(Menu.buildFromTemplate([
-        new MenuItem({label: 'Preferences'}),
+        new MenuItem({label: 'Preferences', click: () => {
+            options_window.show();
+        }}),
         new MenuItem({
             label: `${(store.get('tracking') ? 'Enable' : 'Disable')} Program Tracking`,
             click: () => {
@@ -165,14 +167,18 @@ function create_quick_entry_window() {
 }
 
 function create_options_window() {
-    const window = new BrowserWindow({
+    options_window = new BrowserWindow({
         width: 800,
         height: 600,
         webPreferences: {
             contextIsolation: true
         }
     })
-    window.loadFile('./windows/options/index.html');
+    options_window.loadFile('./windows/options/index.html');
+    options_window.on('close', (event) => {
+        event.preventDefault();
+        options_window.hide();
+    })
 }
 
 //Event Handlers
@@ -182,14 +188,13 @@ app.on('window-all-closed', () => {
   }
 })
 
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow()
-  }
-})
-
 app.whenReady().then(() => {
     update_tray();
+    create_options_window();
+    options_window.hide();
+}).catch(err => {
+    console.error(`Failed to create options window ${err}`);
+    //TODO: Add check for if production and throw fatal error.
 })
 
 //IPC Communication between processes
