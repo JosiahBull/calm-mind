@@ -18,9 +18,6 @@ class Entry {
         quick_entry.timestamp = Date.now();
         this.quick_entries.push(quick_entry);
     }
-    remove_entry(identifier) {
-        //TODO
-    }
     stringify() {
         return JSON.stringify(this);
     }

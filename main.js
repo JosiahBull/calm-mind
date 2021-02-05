@@ -4,6 +4,8 @@ const Entry = require('./entry.js');
 const path = require('path');
 const fs = require('fs');
 const isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false;
+const isWin = process.platform === "win32";
+
 if (isDev) {
     // Enable live reload for Electron too
     require('electron-reload')(__dirname, {
@@ -44,7 +46,7 @@ const provoking_questions = [
     "What is one example of me standing up for my principals today?",
     "If I could remake one decision today, what would it be and why?"
 ];
-const icon_path = './icons/windows/x512.ico';
+const icon_path = (isWin) ? './icons/windows/x512.png' : './icons/linux/x512.png';
 let options_window;
 
 //App Config
@@ -84,7 +86,7 @@ function export_diary_entries() {
 //Note that updating the tray like this is very hacky, and the engine in electron is not designed to do this. If this is changed in the future this should be rewritten to support live updates in a better way.
 function update_tray() { 
     if (tray) tray.destroy();
-    tray = new Tray('./icons/windows/x512.ico')
+    tray = new Tray(icon_path)
     tray.setToolTip('Diary Prompter')
     tray.on('click', () => create_quick_entry_window());
     tray.setContextMenu(Menu.buildFromTemplate([
@@ -215,6 +217,7 @@ function create_options_window() {
     options_window.on('close', (event) => {
         if (!app.isQutting) {
             event.preventDefault();
+            console.log('attempted to hide!');
             options_window.hide();
         }
     })
@@ -229,8 +232,8 @@ app.on('window-all-closed', () => {
 
 app.whenReady().then(() => {
     update_tray();
-    create_options_window();
-    options_window.hide();
+    // create_options_window();
+    // options_window.hide();
 }).catch(err => {
     let error = `Failed to create options window ${err}`;
     if (isDev) console.error(error);
