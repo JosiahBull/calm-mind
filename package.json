@@ -2,8 +2,13 @@
   "name": "calm-mind",
   "version": "1.0.0",
   "description": "A small applet to encourage self-reflection.",
-  "author": "Josiah Bull",
+  "author": {
+    "name": "Josiah Bull",
+    "email": "josiah.bull7@gmail.com",
+    "url": "https://www.github.com/JosiahBull"
+  },
   "main": "main.js",
+  "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cross-env APP_DEV=true electron .",
@@ -32,9 +37,19 @@
     "html-to-markdown": "^1.0.0"
   },
   "build": {
-    "appId": "calm.mind",
-    "mac": {
-      "category": "calm.mind"
+    "appId": "com.electron.calm.mind",
+    "productName": "Calm Mind",
+    "copyright": "Copyright © 2021 Josiah Bull",
+    "win": {
+      "target": "nsis",
+      "icon": "build/icons/icon.ico"
+    },
+    "linux" : {
+      "target": "AppImage",
+      "executableName": "Calm Mind",
+      "icon": "build/icons/icon.png",
+      "synopsis": "A small app for encouraging mindfulness.",
+      "category": "Utility"
     },
     "extraFiles": [
       "icons"

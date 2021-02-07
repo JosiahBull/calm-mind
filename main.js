@@ -251,7 +251,7 @@ app.on('window-all-closed', (event) => {
 app.whenReady().then(() => {
     update_tray();
     if (isWin) options_window.hide();
-
+    create_quick_entry_window();
     if(store.get('reminders')) {
         let reminder_time = new Date().setHours(20, 0, 0, 0);
         if (reminder_time - Date.now() < 0 ) reminder_time = reminder_time + (24 * 60 * 60 * 1000);
