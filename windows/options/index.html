@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Preferences</title>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
-    <!-- <script src="../shared_assets/toggle.js"></script> -->
+    <script src="../shared_assets/toggle.js"></script>
     <script src="../shared_assets/text.js"></script>
 </head>
 <body>
@@ -31,34 +31,34 @@
 </body>
 <script>
     const { ipcRenderer } = require('electron');
-    // new Toggle(document.querySelector('#enable_reminders'), {
-    //     placeholder: 'Allow Entry Reminders',
-    //     required: false,
-    //     allow_refresh: false,
-    //     start_state: ipcRenderer.sendSync('get-data', 'reminders'),
-    //     toggle_function: (state) => ipcRenderer.sendSync('save-data', {key: 'reminders', data: state})
-    // });
-    // new Toggle(document.querySelector('#auto_output'), {
-    //     placeholder: 'Automatically Output Markdown at the End of the Day',
-    //     required: false,
-    //     allow_refresh: false,
-    //     start_state: ipcRenderer.sendSync('get-data', 'auto_output'),
-    //     toggle_function: (state) => ipcRenderer.sendSync('save-data', {key: 'auto_output', data: state})
-    // });
-    // new Toggle(document.querySelector('#run_on_startup'), {
-    //     placeholder: 'Start Program in System Tray on System Boot',
-    //     required: false,
-    //     allow_refresh: false,
-    //     start_state: ipcRenderer.sendSync('get-data', 'run_on_startup'),
-    //     toggle_function: (state) => ipcRenderer.sendSync('save-data', {key: 'run_on_startup', data: state})
-    // });
-    // new Toggle(document.querySelector('#overwrite_output'), {
-    //     placeholder: 'Automatically Overwrite the Markdown Output Folder',
-    //     required: false,
-    //     allow_refresh: false,
-    //     start_state: ipcRenderer.sendSync('get-data', 'auto_overwrite'),
-    //     toggle_function: (state) => ipcRenderer.sendSync('save-data', {key: 'auto_overwrite', data: state})
-    // });
+    new Toggle(document.querySelector('#enable_reminders'), {
+        placeholder: 'Allow Entry Reminders',
+        required: false,
+        allow_refresh: false,
+        start_state: ipcRenderer.sendSync('get-data', 'reminders'),
+        toggle_function: (state) => ipcRenderer.sendSync('save-data', {key: 'reminders', data: state})
+    });
+    new Toggle(document.querySelector('#auto_output'), {
+        placeholder: 'Automatically Output Markdown at the End of the Day',
+        required: false,
+        allow_refresh: false,
+        start_state: ipcRenderer.sendSync('get-data', 'auto_output'),
+        toggle_function: (state) => ipcRenderer.sendSync('save-data', {key: 'auto_output', data: state})
+    });
+    new Toggle(document.querySelector('#run_on_startup'), {
+        placeholder: 'Start Program in System Tray on System Boot',
+        required: false,
+        allow_refresh: false,
+        start_state: ipcRenderer.sendSync('get-data', 'run_on_startup'),
+        toggle_function: (state) => ipcRenderer.sendSync('save-data', {key: 'run_on_startup', data: state})
+    });
+    new Toggle(document.querySelector('#overwrite_output'), {
+        placeholder: 'Automatically Overwrite the Markdown Output if File Already exists',
+        required: false,
+        allow_refresh: false,
+        start_state: ipcRenderer.sendSync('get-data', 'auto_overwrite'),
+        toggle_function: (state) => ipcRenderer.sendSync('save-data', {key: 'auto_overwrite', data: state})
+    });
     new Text(document.querySelector('#markdown_output_location'), {
         label: 'Markdown Output Location:',
         type: 'path',

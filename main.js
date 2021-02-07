@@ -49,12 +49,6 @@ const provoking_questions = [
 const icon_path = (isWin) ? './icons/windows/x512.png' : './icons/linux/x512.png';
 let options_window;
 
-//App Config
-app.setLoginItemSettings({
-    openAtLogin: true,
-    openAsHidden: true,
-});
-
 
 //Helper Functions
 function shuffle_array(array) { //Copied from https://stackoverflow.com/a/12646864
@@ -165,6 +159,12 @@ const store = new Store({
     }
 });
 
+//App Config
+app.setLoginItemSettings({
+    openAtLogin: store.get('run_on_startup'),
+    openAsHidden: true,
+});
+
 //First time program is running, so lets check needed folders exist and create them if not.
 if (store.get('first_start')) {
     let dir = store.get('save_location');
@@ -249,6 +249,18 @@ app.whenReady().then(() => {
     update_tray();
     create_options_window();
     if (isWin) options_window.hide();
+
+    if(store.get('reminders')) {
+        let reminder_time = new Date().setHours(20, 0, 0, 0);
+        if (reminder_time - Date.now() < 0 ) reminder_time = reminder_time + (24 * 60 * 60 * 1000);
+        setTimeout(trigger_diary_entry_reminder, reminder_time - Date.now());
+    }
+    
+    if (store.get('auto_output')) {
+        let reminder_time = new Date().setHours(24, 0, 0, 0);
+        setTimeout(output_entries_automatically, reminder_time - Date.now());
+    }
+
 }).catch(err => {
     let error = `Failed to create options window ${err}`;
     if (isDev) console.error(error);
@@ -367,4 +379,17 @@ ipcMain.on("select_dir", (event, args) => {
             else throw new Error('Unable to select directory');
         });
 });
-  
+
+//Trigger diary entry window at 8pm each night.
+function trigger_diary_entry_reminder() {
+    if (!store.get('reminders')) return;
+    create_diary_entry_window();
+    setTimeout(trigger_diary_entry_reminder, 24 * 60 * 60 * 1000); //Run again in 24 hours.
+}
+
+//Automatically output entries as markdown at 12am.
+function output_entries_automatically() {
+    if (!store.get('auto_output')) return;
+    export_diary_entries(store.get('auto_overwrite'));
+    setTimeout(trigger_diary_entry_reminder, 24 * 60 * 60 * 1000); //Run again in 24 hours.
+}
