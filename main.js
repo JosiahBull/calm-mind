@@ -46,7 +46,7 @@ const provoking_questions = [
     "What is one example of me standing up for my principals today?",
     "If I could remake one decision today, what would it be and why?"
 ];
-const icon_path = (isWin) ? './icons/windows/x512.png' : './icons/linux/x512.png';
+const icon_path = (isWin) ? './icons/windows/x512.png' : path.join(__dirname, '/../icons/linux/x512.png');
 let options_window;
 
 

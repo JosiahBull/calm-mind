@@ -45,14 +45,17 @@
       "icon": "build/icons/icon.ico"
     },
     "linux" : {
-      "target": "AppImage",
+      "target": "deb",
       "executableName": "Calm Mind",
       "icon": "build/icons/icon.png",
       "synopsis": "A small app for encouraging mindfulness.",
       "category": "Utility"
     },
     "extraFiles": [
-      "icons"
+      "./icons/**"
+    ],
+    "extraResources": [
+      "./icons/**"
     ]
   }
 }
