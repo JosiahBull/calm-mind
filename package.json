@@ -1,0 +1,61 @@
+{
+  "name": "calm-mind",
+  "version": "1.0.0",
+  "description": "A small applet to encourage self-reflection.",
+  "author": {
+    "name": "Josiah Bull",
+    "email": "josiah.bull7@gmail.com",
+    "url": "https://www.github.com/JosiahBull"
+  },
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cross-env APP_DEV=true electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JosiahBull/diary-reminder-applet.git"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JosiahBull/diary-reminder-applet/issues"
+  },
+  "homepage": "https://github.com/JosiahBull/diary-reminder-applet#readme",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^11.2.1",
+    "electron-builder": "^22.9.1",
+    "electron-reload": "^1.5.0"
+  },
+  "dependencies": {
+    "@ckeditor/ckeditor5-build-balloon-block": "^25.0.0",
+    "html-to-markdown": "^1.0.0"
+  },
+  "build": {
+    "appId": "com.electron.calm.mind",
+    "productName": "Calm Mind",
+    "copyright": "Copyright © 2021 Josiah Bull",
+    "win": {
+      "target": "nsis",
+      "icon": "build/icons/icon.ico"
+    },
+    "linux" : {
+      "target": "deb",
+      "executableName": "Calm Mind",
+      "icon": "build/icons/icon.png",
+      "synopsis": "A small app for encouraging mindfulness.",
+      "category": "Utility"
+    },
+    "extraFiles": [
+      "./icons/**"
+    ],
+    "extraResources": [
+      "./icons/**"
+    ]
+  }
+}

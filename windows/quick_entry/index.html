@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Diary Quick Add</title>
+    <script src="../../node_modules/@ckeditor/ckeditor5-build-balloon-block/build/ckeditor.js"></script>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+</head>
+<body>
+    <div class="main_window">        
+        <div class="titlebar"></div>
+        <img src="assets/close.svg", class="close-button" onclick="close_entry()">
+        <div class="form-style-5">
+            <form>
+                <fieldset>
+                    <legend><span class="number">1</span> Add Quick Entry</legend>
+                    <input name="location" placeholder="Where are you?">
+                    <input name="title" placeholder="What's the topic for this entry?">
+                    <div id="editor_wrapper">
+                        <div id="editor"></div> 
+                    </div>
+                </fieldset>
+                <input id="submission_button" type="button" value="Save Entry" onclick="submit_entry()"/>
+            </form>
+        </div>
+    </div>
+    <script> //Create the rich text editor box (ckeditor5).
+        BalloonEditor
+            .create( document.querySelector('#editor'), {
+                placeholder: "What's up?"
+            }).then( editor => {
+		        window.editor = editor;
+	        }).catch(err => {
+                console.error(err);
+            });
+    </script>
+    <script> //Handle resizing of the window.
+        const margin = 55;
+        const min_size = 75;
+        let text_box = document.querySelector('#editor_wrapper');
+        let button = document.querySelector('#submission_button');
+
+        function getPosition(element) { //Copied & modified from: https://stackoverflow.com/questions/11805955/how-to-get-the-distance-from-the-top-for-an-element
+            let yPosition = 0;
+            while(element) {
+                yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
+                element = element.offsetParent;
+            }
+            return yPosition;
+        }
+        
+        function resize_text_box() {
+            let text_box_offset = getPosition(text_box);
+            let button_offset = getPosition(button);
+            let new_height = window.innerHeight - text_box_offset - margin - button.offsetHeight;
+            text_box.style.height = `${Math.max(new_height, min_size)}px`;
+        };
+
+        window.addEventListener('resize', resize_text_box); 
+        resize_text_box();
+    </script>
+    <script> //Handle button clicks, etc.
+        const { ipcRenderer } = require('electron');
+        function submit_entry() {
+            let package = {
+                location: document.getElementsByName('location')[0].value,
+                topic: document.getElementsByName('title')[0].value,
+                main_box: window.editor.getData(),
+            };
+            if (package.location.length > 0 || package.topic.length > 0 || package.main_box.length > 0) ipcRenderer.send('save_quick_entry', package);
+            window.close();
+        }
+
+        function close_entry() {
+            //TODO Implement a confirmation dialog box if the user has made changes in excess of 10 chars total.
+            window.close();
+        }
+    </script>
+    <style>
+        .close-button {
+            height: 22px;
+            width: 22px;
+            position: fixed;
+            top: 21px;
+            right: 31px;
+            -webkit-app-region: no-drag;
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        .titlebar {
+            position: absolute;
+            width: 100%;
+            height: 50px;
+            z-index: -1;
+            -webkit-app-region: drag;
+            background-color: #c3c5c5;
+            border-radius: 8px;
+        }
+
+        .main_window {
+            overflow: auto;
+            border-radius: 8px;
+            width: 100vw;
+            height: 99vh;
+            margin: auto;
+            background: #f4f7f8;
+        }
+
+        .form-style-5{
+            padding: 20px 20px 5px 20px;
+            background: #f4f7f8;
+            margin: 0;
+            height: 90%;
+            font-family: Georgia, "Times New Roman", Times, serif;
+        }
+        .form-style-5 fieldset{
+            border: none;
+        }
+        .form-style-5 legend {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+        }
+        .form-style-5 label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        .form-style-5 input,
+        .form-style-5 #editor,
+        .form-style-5 select {
+            font-family: Georgia, "Times New Roman", Times, serif;
+            background: rgba(255,255,255,.1);
+            border: none;
+            border-radius: 4px;
+            font-size: 15px;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;  
+            background-color: #e8eeef;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
+            margin-bottom: 25px;
+        }
+        .form-style-5 input:focus,
+        .form-style-5 #editor:focus,
+        .form-style-5 select:focus{
+            background: #d2d9dd;
+        }
+        .form-style-5 .number {
+            background: #1abc9c;
+            color: #fff;
+            height: 30px;
+            width: 30px;
+            display: inline-block;
+            font-size: 0.8em;
+            margin-right: 4px;
+            line-height: 30px;
+            text-align: center;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+            border-radius: 15px 15px 15px 0px;
+        }
+
+        .form-style-5 input[type="submit"],
+        .form-style-5 input[type="button"]
+        {
+            position: relative;
+            display: block;
+            padding: 15px 39px 10px 39px;
+            color: #FFF;
+            margin: 0 auto;
+            margin-top: 10px;
+            background: #1abc9c;
+            font-size: 18px;
+            text-align: center;
+            font-style: normal;
+            width: 90%;
+            border: 1px solid #16a085;
+            border-width: 1px 1px 3px;
+            border-radius: 4px;
+        }
+        .form-style-5 input[type="submit"]:hover,
+        .form-style-5 input[type="button"]:hover
+        {
+            background: #109177;
+        }
+
+        body {
+            margin: 0px;
+            overflow: hidden;
+        }
+
+        #editor_wrapper {
+            overflow: auto;
+        }
+
+        .form-style-5 #editor {
+            margin: 0;
+        }
+    </style>
+</body>
+</html>

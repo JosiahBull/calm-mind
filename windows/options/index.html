@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Preferences</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <script src="../shared_assets/toggle.js"></script>
+    <script src="../shared_assets/text.js"></script>
+</head>
+<body>
+    <div class="form-style-5">
+        <form>
+            <fieldset>
+                <legend><span class="number">1</span>Basic Settings</legend>
+                <!-- <input name="feeling" placeholder="How did today go, in a word?"> -->
+                <div id="enable_reminders"></div>
+                <div id="run_on_startup"></div>
+                <br/>
+                <br/>
+                <legend><span class="number">2</span>Markdown Output</legend>
+                <div id="auto_output"></div>
+                <div id="overwrite_output"></div>
+                <!-- <span><span>Markdown Output Location: </span><span contenteditable="true">C:/Users/Josiah/Documents/Calm Mind</span></span> -->
+                <div id="markdown_output_location"></div>
+            </fieldset>
+            <br/>
+            <br/>
+            <!-- <input id="submission_button" type="button" value="Save Entry" onclick="submit_entry()"/> -->
+        </form>
+    </div>
+</body>
+<script>
+    const { ipcRenderer } = require('electron');
+    new Toggle(document.querySelector('#enable_reminders'), {
+        placeholder: 'Allow Entry Reminders',
+        required: false,
+        allow_refresh: false,
+        start_state: ipcRenderer.sendSync('get-data', 'reminders'),
+        toggle_function: (state) => ipcRenderer.sendSync('save-data', {key: 'reminders', data: state})
+    });
+    new Toggle(document.querySelector('#auto_output'), {
+        placeholder: 'Automatically Output Markdown at the End of the Day',
+        required: false,
+        allow_refresh: false,
+        start_state: ipcRenderer.sendSync('get-data', 'auto_output'),
+        toggle_function: (state) => ipcRenderer.sendSync('save-data', {key: 'auto_output', data: state})
+    });
+    new Toggle(document.querySelector('#run_on_startup'), {
+        placeholder: 'Start Program in System Tray on System Boot',
+        required: false,
+        allow_refresh: false,
+        start_state: ipcRenderer.sendSync('get-data', 'run_on_startup'),
+        toggle_function: (state) => ipcRenderer.sendSync('save-data', {key: 'run_on_startup', data: state})
+    });
+    new Toggle(document.querySelector('#overwrite_output'), {
+        placeholder: 'Automatically Overwrite the Markdown Output if File Already exists',
+        required: false,
+        allow_refresh: false,
+        start_state: ipcRenderer.sendSync('get-data', 'auto_overwrite'),
+        toggle_function: (state) => ipcRenderer.sendSync('save-data', {key: 'auto_overwrite', data: state})
+    });
+    new Text(document.querySelector('#markdown_output_location'), {
+        label: 'Markdown Output Location:',
+        type: 'path',
+        placeholder: ipcRenderer.sendSync('get-data', 'save_location'),
+        allow_empty: false,
+        create_if_not_exist: true,
+        callback: (data) => {}
+    });
+</script>
+<style>
+    .form-style-5{
+        padding: 20px 20px 5px 20px;
+        margin: 0;
+        height: 90%;
+        font-family: Georgia, "Times New Roman", Times, serif;
+    }
+    .form-style-5 fieldset{
+        border: none;
+    }
+    .form-style-5 legend {
+        font-size: 1.4em;
+        margin-bottom: 10px;
+    }
+    .sub {
+        font-size: 1.3em;
+        margin-bottom: 5px;
+        width: 90px;
+    }
+    .form-style-5 label {
+        display: block;
+        margin-bottom: 8px;
+    }
+    .form-style-5 input,
+    .form-style-5 .editor,
+    .form-style-5 select,
+    .form-style-5 .editor_wrapper {
+        font-family: Georgia, "Times New Roman", Times, serif;
+        background: rgba(255,255,255,.1);
+        border: none;
+        border-radius: 4px;
+        font-size: 15px;
+        padding: 10px;
+        width: 100%;
+        box-sizing: border-box;  
+        background-color: #e8eeef;
+        box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
+        margin-bottom: 25px;
+    }
+
+    .form-style-5 .invalid {
+        background-color: rgb(255, 220, 217);
+        border-bottom: 2px solid rgb(140, 11, 0);
+    }
+
+    .form-style-5 input:focus,
+    .form-style-5 .editor:focus,
+    .form-style-5 select:focus{
+        background: #d2d9dd;
+    }
+    .form-style-5 .number {
+        background: #1abc9c;
+        color: #fff;
+        height: 30px;
+        width: 30px;
+        display: inline-block;
+        font-size: 0.8em;
+        margin-right: 4px;
+        line-height: 30px;
+        text-align: center;
+        text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+        border-radius: 15px 15px 15px 0px;
+    }
+
+    .form-style-5 input[type="submit"],
+    .form-style-5 input[type="button"]
+    {
+        position: relative;
+        display: block;
+        padding: 15px 39px 10px 39px;
+        color: #FFF;
+        margin: 0 auto;
+        margin-top: 10px;
+        background: #1abc9c;
+        font-size: 18px;
+        text-align: center;
+        font-style: normal;
+        width: 90%;
+        border: 1px solid #16a085;
+        border-width: 1px 1px 3px;
+        border-radius: 4px;
+    }
+    .form-style-5 input[type="submit"]:hover,
+    .form-style-5 input[type="button"]:hover
+    {
+        background: #109177;
+    }
+
+    body {
+        margin: 0px;
+        overflow: hidden;
+        background: #f4f7f8;
+    }
+
+    .editor_wrapper {
+        overflow: auto;
+        padding: 0px !important;
+    }
+
+    .form-style-5 .editor {
+        margin: 0;
+    }
+</style>
+</html>
