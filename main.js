@@ -236,9 +236,11 @@ function create_options_window() {
             if (isWin) {
                 event.preventDefault();
                 options_window.hide();
+                return;
             }
         }
-    })
+        options_window = null;
+    });
 }
 
 //Event Handlers
