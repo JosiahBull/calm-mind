@@ -1,5 +1,9 @@
 class Text {
     constructor(elem, opts) {
+        let { shell, ipcRenderer } = require('electron');
+        this.ipcRenderer = ipcRenderer;
+        this.shell = shell;
+
         //Check if any other text inputs have been created, if not then perform inital setup.
         if (!window.text_editors) {
             window.text_inputs = {
@@ -54,6 +58,7 @@ class Text {
 
             .path_title_container {
                 min-width: 100px;
+                max-width: 350px;
                 width: 35vw;
                 box-sizing: border-box;
                 overflow: hidden;
@@ -67,6 +72,8 @@ class Text {
                 text-overflow: ellipsis;
                 width: 100%;
                 left: 0%;
+                color:blue;
+                text-decoration:underline;
 
                 transition: right 3s 0.5s ease-in-out, width 3s 0.5s ease-in-out;
                 transition-delay: 0.2s;
@@ -108,13 +115,12 @@ class Text {
 
         //Create element
         try {
-            //<span class="input_text_container"><span class="input_field" contenteditable>${this.placeholder}</span</span>
             const template = `
                 <div class="surrounding_div">
                     <span class="main_label">${this.label}</span>
                     <span class="path_container">
-                        <span class="path_title_container"><p class="path_limit">${placeholder}</p></span>
-                        <img class="folder_icon_button" src="../shared_assets/folder.svg">
+                        <span class="path_title_container"><p id="select_path_text_ID_${this.id}" class="path_limit">${placeholder}</p></span>
+                        <img id="select_path_ID_${this.id}" class="folder_icon_button" src="../shared_assets/folder.svg">
                     </span>
                 </div>
             `;
@@ -123,13 +129,22 @@ class Text {
             elem.innerHTML = template;
             
             //Add listeners
-            if (callback) ; //Add listener for on change.
+            document.querySelector(`#select_path_text_ID_${this.id}`).addEventListener('click', () => shell.openPath(this.data));
+            document.querySelector(`#select_path_ID_${this.id}`).addEventListener('click', () => this.ipcRenderer.send('select_dir'));
+            this.ipcRenderer.on('dir_selected', (event, arg) => this.update_path(arg));
             
         } catch (err) {
             //TODO: Remove failed init attempt just in case.
             console.error(`Faile to create text input element. ${err.stack}`);
             this.error = true;
         }
+    }
+    update_path(data) {
+        if (data.canceled) return; //No change to path
+        this.data = data.filePaths[0];
+        if (this.callback) this.callback(this.data);
+
+        document.querySelector(`#select_path_text_ID_${this.id}`).innerText = this.data;
     }
 }
 

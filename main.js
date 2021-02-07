@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, Tray, MenuItem, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, Tray, MenuItem, ipcMain, dialog } = require('electron');
 const Store = require('./store.js');
 const Entry = require('./entry.js');
 const path = require('path');
@@ -66,7 +66,7 @@ function shuffle_array(array) { //Copied from https://stackoverflow.com/a/126468
 }
 
 //A function to export all diary entries
-function export_diary_entries() {
+function export_diary_entries(force = false) {
     let entries = store.get('entries');
     const file_path = store.get('save_location');
     entries = Object.values(entries).map(entry => {
@@ -85,28 +85,24 @@ function export_diary_entries() {
 
 //Note that updating the tray like this is very hacky, and the engine in electron is not designed to do this. If this is changed in the future this should be rewritten to support live updates in a better way.
 function update_tray() { 
+    if (tray && !isWin) return; //Bug in linux doesn't allow us to recreate the tray in this boostrap manner. See: https://github.com/electron/electron/issues/17622
     if (tray) tray.destroy();
     tray = new Tray(icon_path)
     tray.setToolTip('Diary Prompter')
     tray.on('click', () => create_quick_entry_window());
-    tray.setContextMenu(Menu.buildFromTemplate([
+
+    let items = [
         new MenuItem({label: 'Preferences', click: () => {
-            options_window.show();
+            if (isWin) options_window.show();
+            else create_options_window();
         }}),
-        new MenuItem({
-            label: `${(store.get('tracking') ? 'Enable' : 'Disable')} Program Tracking`,
-            click: () => {
-                store.set('tracking', !store.get('tracking'));
-                update_tray();
-            }
-        }),
-        new MenuItem({
-            label: `${(store.get('reminders') ? 'Enable' : 'Disable')} Hourly Reminders`,
-            click: () => {
-                store.set('reminders', !store.get('reminders'));
-                update_tray();
-            }
-        }),
+        // new MenuItem({
+        //     label: `${(store.get('tracking') ? 'Enable' : 'Disable')} Program Tracking`,
+        //     click: () => {
+        //         store.set('tracking', !store.get('tracking'));
+        //         update_tray();
+        //     }
+        // }),
         new MenuItem({
             label: 'Add Quick Entry',
             click: () => create_quick_entry_window()
@@ -119,11 +115,20 @@ function update_tray() {
             label: 'Quit',
             click: () => {
                 app.isQutting = true;
-                options_window.close()
+                if (isWin) options_window.close();
                 app.quit();
             }
         })
-    ]));
+    ];
+    if (isWin) items.push(new MenuItem({
+        label: `${(store.get('reminders') ? 'Enable' : 'Disable')} Hourly Reminders`,
+        click: () => {
+            store.set('reminders', !store.get('reminders'));
+            update_tray();
+        }
+    })); //We can only add this item on windows machines, as the fast toggle doesn't work for linux.
+
+    tray.setContextMenu(Menu.buildFromTemplate(items));
 }
 
 //Create Classes
@@ -131,7 +136,7 @@ let tray;
 const store = new Store({
     config_name: 'user-preferences',
     defaults: {
-        tracking: true,
+        // tracking: true,
         reminders: true,
         self_care_questions_base: self_care_questions,
         remaining_self_care_questions: shuffle_array(self_care_questions),
@@ -154,8 +159,18 @@ const store = new Store({
         save_location: path.join(app.getPath('documents'), '/Calm Mind'),
         entries: {},
         run_on_startup: true,
+        auto_output: true,
+        auto_overwrite: false,
+        first_start: true,
     }
 });
+
+//First time program is running, so lets check needed folders exist and create them if not.
+if (store.get('first_start')) {
+    let dir = store.get('save_location');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+    store.set('first_start', false);
+}
 
 //Window Creation Functions
 function create_diary_entry_window(){
@@ -203,6 +218,7 @@ function create_quick_entry_window() {
 }
 
 function create_options_window() {
+    if (options_window) return options_window.show(); //Don't allow more than one preferences window to appear at once.
     options_window = new BrowserWindow({
         width: 800,
         height: 600,
@@ -216,24 +232,23 @@ function create_options_window() {
     options_window.loadFile('./windows/options/index.html');
     options_window.on('close', (event) => {
         if (!app.isQutting) {
-            event.preventDefault();
-            console.log('attempted to hide!');
-            options_window.hide();
+            if (isWin) {
+                event.preventDefault();
+                options_window.hide();
+            }
         }
     })
 }
 
 //Event Handlers
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+app.on('window-all-closed', (event) => {
+    event.preventDefault();
 })
 
 app.whenReady().then(() => {
     update_tray();
-    // create_options_window();
-    // options_window.hide();
+    create_options_window();
+    if (isWin) options_window.hide();
 }).catch(err => {
     let error = `Failed to create options window ${err}`;
     if (isDev) console.error(error);
@@ -314,3 +329,42 @@ ipcMain.on('questions', (event, opts) => {
 
     store_list(); //Replace list with removed items.
 });
+
+ipcMain.on('get-data', (event, args) => {
+    try {
+        event.returnValue = store.get(args);
+    } catch (err) {
+        let error = `Encountered an error requesting a data value for a renderer ${err}`;
+        if (isDev) console.error(error);
+        else throw new Error(error);
+    }
+});
+
+ipcMain.on('save-data', (event, args) => {
+    try {
+        store.set(args.key, args.data);
+        event.returnValue = true;
+        update_tray();
+    } catch (err) {
+        let error = `Encountered an error saving a data value for a renderer ${err}`;
+        if (isDev) console.error(error);
+        else throw new Error(error);
+    }
+});
+
+//Opens search dialog.
+ipcMain.on("select_dir", (event, args) => {
+    console.log("Selecting dir");
+    dialog
+        .showOpenDialog({
+            title: 'Select Directory',
+            filters: [],
+            properties: ["openDirectory", "showHiddenFiles"]
+        }).then(result => {
+            event.reply('dir_selected', result);
+        }).catch(err => {
+            if (isDev) console.error(err);
+            else throw new Error('Unable to select directory');
+        });
+});
+  
