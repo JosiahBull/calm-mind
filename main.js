@@ -62,7 +62,6 @@ function shuffle_array(array) { //Copied from https://stackoverflow.com/a/126468
 //A function to export all diary entries
 function export_diary_entries(force = false) {
     let entries = store.get('entries');
-    const file_path = store.get('save_location');
     entries = Object.values(entries).map(entry => {
         entry = new Entry(entry);
         let d = new Date(entry.start_day);
@@ -70,7 +69,9 @@ function export_diary_entries(force = false) {
         const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d);
         const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d);
         let markdown = entry.generate_markdown();
-        fs.writeFileSync(path.join(file_path, `${da}-${mo}-${ye} Diary Entry.md`), markdown);
+        let file_path = path.join(store.get('save_location'), `${da}-${mo}-${ye} Diary Entry.md`);
+        if (fs.existsSync(file_path) && !force) return; //File already exists, and we're not allowed to overwrite it.
+        fs.writeFileSync(file_path, markdown);
     });
     // store.set('entries', entries); <- //TODO: store which entries have already been exported, and mark them as exported.
     //TODO: Add auto-renaming on force export.
@@ -247,7 +248,6 @@ app.on('window-all-closed', (event) => {
 
 app.whenReady().then(() => {
     update_tray();
-    create_options_window();
     if (isWin) options_window.hide();
 
     if(store.get('reminders')) {
@@ -304,6 +304,7 @@ ipcMain.on('save_entry', (event, args) => {
     entry.generate_markdown();
     console.log(entry);
     store.set(`entries.${day_data}`, entry);
+    export_diary_entries(false); //Save entries after main entry created.
 }); 
 
 //Get self care questions
