@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Diary Quick Add</title>
-    <!-- <script src="../../node_modules/@ckeditor/ckeditor5-build-balloon-block/build/ckeditor.js"></script> -->
+    <script src="../../node_modules/@ckeditor/ckeditor5-build-balloon-block/build/ckeditor.js"></script>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
 </head>
 <body>
@@ -25,22 +25,9 @@
         </div>
     </div>
     <script> //Create the rich text editor box (ckeditor5).
-        import BalloonEditor from '@ckeditor/ckeditor5-build-balloon-block/build/';
-        import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials';
-        import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
-        import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
-
-        import Markdown from '@ckeditor/ckeditor5-markdown-gfm/src/markdown';
-
         BalloonEditor
             .create( document.querySelector('#editor'), {
-                placeholder: "What's up?",
-                plugins: [
-                    Markdown,
-                    Essentials,
-                    Bold,
-                    Italic,
-                ]
+                placeholder: "What's up?"
             }).then( editor => {
 		        window.editor = editor;
 	        }).catch(err => {

@@ -46,7 +46,14 @@ const provoking_questions = [
     "What is one example of me standing up for my principals today?",
     "If I could remake one decision today, what would it be and why?"
 ];
-const icon_path = (isWin) ? './icons/windows/x512.png' : path.join(__dirname, '/../icons/linux/x512.png');
+
+let icon_path;
+if (isWin) {
+    icon_path = './icons/windows/x512.png';
+} else {
+    icon_path = (isDev) ? './icons/linux/x512.png' : path.join(__dirname, '/../icons/linux/x512.png');
+}
+
 let options_window;
 
 
@@ -63,7 +70,7 @@ function shuffle_array(array) { //Copied from https://stackoverflow.com/a/126468
 function export_diary_entries(force = false) {
     let entries = store.get('entries');
     entries = Object.values(entries).map(entry => {
-        entry = new Entry(entry);
+        entry = new Entry(entry);icons/linux/x512.png
         let d = new Date(entry.start_day);
         const ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d);
         const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d);
